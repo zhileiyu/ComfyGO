@@ -1,0 +1,6 @@
+[endpoint]
+base_url = "localhost"
+port = 8188
+protocol = ""
+ssl_cert = ""
+ssl_pem = ""
