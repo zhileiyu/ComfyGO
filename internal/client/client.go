@@ -36,7 +36,7 @@ func (imp *CFImp) ServerAvailable() bool {
 }
 
 func (imp *CFImp) checkServerInfo() {
-	resp, err := imp.hc.Get(imp.endPoint)
+	resp, err := imp.hc.Get(imp.endPoint + systemStats)
 	if err != nil {
 		logger.Info(err)
 		imp.serverOffline()

@@ -5,12 +5,12 @@ import (
 )
 
 type Config struct {
-	EndPoint
+	Endpoint `toml:"endpoint"`
 }
 
-type EndPoint struct {
-	BaseUrl string
-	Port    int
+type Endpoint struct {
+	BaseUrl string `toml:"base_url"`
+	Port    int    `toml:"port"`
 }
 
 func loadConfig(fileName string) (Config, error) {
