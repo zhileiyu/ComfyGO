@@ -1,7 +1,7 @@
 package client
 
-type ServerInfo struct {
-	Available bool
-	Endpoint  string
+type serverInfo struct {
+	available bool
+	endpoint  string
 	systemInfo
 }

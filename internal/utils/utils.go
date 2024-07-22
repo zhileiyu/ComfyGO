@@ -1,14 +1,19 @@
-package client
+package utils
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"github.com/zhileiyu/comfyGO/internal/logger"
 	"io"
 	"net/http"
 )
 
-func bindHttpRes(res *http.Response, target interface{}) error {
-	defer res.Body.Close()
+func UniqueStr() string {
+	uid, _ := uuid.NewUUID()
+	return uid.String()
+}
+
+func BindHttpRes(res *http.Response, target interface{}) error {
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		logger.Error()

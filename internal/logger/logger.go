@@ -9,24 +9,40 @@ type logger interface {
 	Fatal(args ...interface{})
 }
 
-type defaultLogger struct{}
+var userLogger logger
 
 func SetLogger(l logger) {
-
+	userLogger = l
 }
 
 func Debug(v ...interface{}) {
-	log.Println(v)
+	if userLogger != nil {
+		userLogger.Debug(v...)
+		return
+	}
+	log.Printf("comfy client debug log: %v", v)
 }
 
 func Info(v ...interface{}) {
-	log.Println(v)
+	if userLogger != nil {
+		userLogger.Debug(v...)
+		return
+	}
+	log.Printf("comfy client info log: %v", v)
 }
 
 func Error(v ...interface{}) {
-	log.Println(v)
+	if userLogger != nil {
+		userLogger.Debug(v...)
+		return
+	}
+	log.Printf("comfy client error log: %v", v)
 }
 
 func Fatal(v ...interface{}) {
-	log.Fatal(v...)
+	if userLogger != nil {
+		userLogger.Debug(v...)
+		return
+	}
+	log.Fatal("comfy client fatal log: %v", v)
 }
