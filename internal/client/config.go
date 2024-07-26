@@ -2,6 +2,8 @@ package client
 
 import (
 	"github.com/BurntSushi/toml"
+	"github.com/zhileiyu/comfyGO/internal/logger"
+	"os"
 )
 
 type Config struct {
@@ -13,11 +15,15 @@ type Endpoint struct {
 	Port    int    `toml:"port"`
 }
 
-func loadConfig(fileName string) (Config, error) {
-	var c Config
-	_, err := toml.DecodeFile(fileName, &c)
-	if err != nil {
-		return c, err
+func loadConfig(fileName string) *Config {
+	c := &Config{}
+	_, err := toml.DecodeFile(fileName, c)
+	if os.IsNotExist(err) {
+		logger.Error("config file not exist")
+		return nil
+	} else if err != nil {
+		logger.Error("decode config file fail " + err.Error())
+		return nil
 	}
-	return c, nil
+	return c
 }

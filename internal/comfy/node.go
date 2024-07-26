@@ -1,26 +1,27 @@
 package comfy
 
 type node struct {
-	nodeID   int
-	nodeType nodeClass
-	order    int
-	inputs   []nodeInputs
-	outputs  []nodeOutputs
-	mode     int
-	version  string
+	NodeID        int           `json:"id"`
+	NodeType      nodeClass     `json:"type"`
+	Order         int           `json:"order"`
+	Inputs        []nodeInputs  `json:"inputs"`
+	Outputs       []nodeOutputs `json:"outputs"`
+	Mode          int           `json:"mode"`
+	Properties    string        `json:"properties"`
+	WidgetsValues []interface{} `json:"widgets_values"`
 }
 
 type nodeInputs struct {
-	name      string
-	inputType inputClass
-	link      int
+	Name      string     `json:"name"`
+	InputType inputClass `json:"type"`
+	Link      int        `json:"link"`
 }
 
 type nodeOutputs struct {
-	name      string
-	inputType inputClass
-	links     []int
-	slotIndex int
+	Name      string     `json:"name"`
+	InputType inputClass `json:"type"`
+	Links     []int      `json:"links"`
+	SlotIndex int        `json:"slot_index"`
 }
 
 type nodeClass int

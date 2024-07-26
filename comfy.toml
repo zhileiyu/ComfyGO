@@ -1,6 +1,6 @@
 [endpoint]
 base_url = "192.168.31.206"
 port = 8188
-protocol = ""
+ssl_enable = false
 ssl_cert = ""
 ssl_pem = ""

@@ -6,39 +6,38 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"github.com/zhileiyu/comfyGO/internal/comfy"
 	"github.com/zhileiyu/comfyGO/internal/logger"
 	"github.com/zhileiyu/comfyGO/internal/utils"
 	"log"
 	"net/http"
 )
 
-type CFImp struct {
+type Imp struct {
 	endPoint  string
 	server    serverInfo
 	hc        *http.Client
 	wsConn    *websocket.Conn
 	clientID  string
 	available bool
+	workflows map[string]*comfy.Workflow
 }
 
-func New(configFile string) *CFImp {
-	config, err := loadConfig(configFile)
-	if err != nil {
-		logger.Fatal(err)
-		return nil
-	}
+func newImp(config *Config) *Imp {
 	httpBaseUrl := fmt.Sprintf("http://%s:%d", config.BaseUrl, config.Port)
-	imp := &CFImp{
+	imp := &Imp{
 		endPoint: httpBaseUrl,
 		hc:       &http.Client{},
 		server: serverInfo{
 			endpoint: httpBaseUrl,
 		},
-		clientID: utils.UniqueStr(),
+		clientID:  utils.UniqueStr(),
+		workflows: make(map[string]*comfy.Workflow),
 	}
 	imp.checkServerInfo()
 	if imp.server.available {
 		wsBaseUrl := fmt.Sprintf("ws://%s:%d/ws?clientID=%s", config.BaseUrl, config.Port, imp.clientID)
+		var err error
 		imp.wsConn, _, err = websocket.DefaultDialer.Dial(wsBaseUrl, nil)
 		if err != nil {
 			return nil
@@ -50,12 +49,12 @@ func New(configFile string) *CFImp {
 	return imp
 }
 
-func (imp *CFImp) ServerAvailable() bool {
+func (imp *Imp) ServerAvailable() bool {
 	imp.checkServerInfo()
 	return imp.server.available
 }
 
-func (imp *CFImp) checkServerInfo() {
+func (imp *Imp) checkServerInfo() {
 	info := systemInfo{}
 	err := imp.GetData(systemStats, &info)
 	if err != nil {
@@ -65,25 +64,25 @@ func (imp *CFImp) checkServerInfo() {
 	imp.server.systemInfo = info
 }
 
-func (imp *CFImp) ServerInfo(refresh bool) serverInfo {
+func (imp *Imp) ServerInfo(refresh bool) serverInfo {
 	if refresh {
 		imp.checkServerInfo()
 	}
 	return imp.server
 }
 
-func (imp *CFImp) serverOffline() {
+func (imp *Imp) serverOffline() {
 	imp.server = serverInfo{
 		available: false,
 	}
 }
 
-func (imp *CFImp) PostEnqueue() error {
+func (imp *Imp) PostEnqueue() error {
 	err := imp.PostJson(queue, nil, nil)
 	return err
 }
 
-func (imp *CFImp) PostJson(path string, reqData interface{}, resData interface{}) error {
+func (imp *Imp) PostJson(path string, reqData interface{}, resData interface{}) error {
 	var jsonData []byte
 	if reqData != nil {
 		jsonData, _ = json.Marshal(reqData)
@@ -117,7 +116,7 @@ func (imp *CFImp) PostJson(path string, reqData interface{}, resData interface{}
 	return nil
 }
 
-func (imp *CFImp) GetData(path string, data interface{}) error {
+func (imp *Imp) GetData(path string, data interface{}) error {
 	resp, err := imp.hc.Get(imp.endPoint + path)
 	defer resp.Body.Close()
 	if err != nil {
@@ -135,4 +134,19 @@ func (imp *CFImp) GetData(path string, data interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func (imp *Imp) CreateWorkflow(data []byte) string {
+	//TODO use sync.pool
+	workflow := comfy.NewWorkflowFromJson(data)
+	if workflow == nil {
+		return ""
+	}
+	imp.workflows[workflow.ID] = workflow
+	return workflow.ID
+}
+
+func (imp *Imp) PromptEnqueue(wid string) {
+	workflow := imp.workflows[wid]
+	imp.PostJson(prompt, workflow.Data)
 }
